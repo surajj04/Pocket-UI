@@ -1,14 +1,14 @@
 import { LogOut } from 'lucide-react'
 import React, { useState } from 'react'
 import { useDispatch } from 'react-redux'
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { logout } from '../store/userSlice'
 import LogoutConfirmationAlert from './LogoutAlert'
 
 function Navbar ({ navItems }) {
   const pathname = useLocation().pathname
-
   const dispatch = useDispatch()
+  const navigate = useNavigate()
 
   const [showLogout, setShowLogout] = useState(false)
 
@@ -16,9 +16,24 @@ function Navbar ({ navItems }) {
     setShowLogout(true)
   }
 
+  const confirmLogout = () => {
+    dispatch(logout())
+    setShowLogout(false)
+    navigate('/login') // Optional: redirect to login page
+  }
+
+  const cancelLogout = () => {
+    setShowLogout(false)
+  }
+
   return (
     <>
-      {showLogout && <LogoutConfirmationAlert />}
+      {showLogout && (
+        <LogoutConfirmationAlert
+          onConfirm={confirmLogout}
+          onCancel={cancelLogout}
+        />
+      )}
 
       <div>
         <nav className='w-64 bg-white shadow-lg p-4 hidden md:block h-screen'>
@@ -42,13 +57,13 @@ function Navbar ({ navItems }) {
               </li>
             ))}
             <li>
-              <Link
+              <button
                 onClick={handleLogout}
-                className='flex items-center w-full p-2 rounded-lg text-gray-600 hover:bg-gray-100 '
+                className='flex items-center w-full p-2 rounded-lg text-gray-600 hover:bg-gray-100'
               >
                 <LogOut className='mr-3 h-5 w-5' />
                 Logout
-              </Link>
+              </button>
             </li>
           </ul>
         </nav>

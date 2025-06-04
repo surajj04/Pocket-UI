@@ -3,10 +3,7 @@ import React, { useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { fetchData } from '../store/userSlice'
 import { useNavigate } from 'react-router-dom'
-<<<<<<< HEAD
-=======
-import RegistrationSuccessAlert from '../components/RegistrationSuccessAlert'
->>>>>>> dafafa2 (updated code)
+import RegistrationSuccessAlert from '../components/SuccessAlert'
 
 const API_KEY = import.meta.env.VITE_APP_API_BASE_URL
 
@@ -33,12 +30,7 @@ const BudgetSetupPage = () => {
   const user = useSelector(state => state.user.user)
   const dispatch = useDispatch()
 
-<<<<<<< HEAD
-  const navigate = useNavigate()
-
-=======
   // State for all categories
->>>>>>> dafafa2 (updated code)
   const [monthlyBudget, setMonthlyBudget] = useState('')
   const [bills, setBills] = useState('')
   const [food, setFood] = useState('')
@@ -92,12 +84,8 @@ const BudgetSetupPage = () => {
 
       if (res.data?.budgetId > 0) {
         dispatch(fetchData(user?.token))
-<<<<<<< HEAD
-        navigate('/budget')
-=======
         alert('Budget setup completed successfully!')
         navigate('/')
->>>>>>> dafafa2 (updated code)
       } else {
         alert('Failed to save budget. Please try again.')
       }

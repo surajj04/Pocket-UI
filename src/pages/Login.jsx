@@ -4,11 +4,8 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useDispatch } from 'react-redux'
 import { login } from '../store/userSlice'
 import axios from 'axios'
-<<<<<<< HEAD
 import InvalidCredentialsAlert from '../components/InvalidAlert'
-=======
 import ErrorAlert from '../components/ErrorAlert'
->>>>>>> dafafa2 (updated code)
 
 const API_KEY = import.meta.env.VITE_APP_API_BASE_URL
 
@@ -22,11 +19,8 @@ export default function Login () {
     password: ''
   })
   const [loginSuccess, setLoginSuccess] = useState(false)
-<<<<<<< HEAD
   const [invalidAlert, setInvalidAlert] = useState(false)
-=======
   const [errorMessage, setErrorMessage] = useState(null)
->>>>>>> dafafa2 (updated code)
 
   const handleChange = e => {
     const { name, value } = e.target
@@ -40,30 +34,17 @@ export default function Login () {
 
   const handleSubmit = async e => {
     e.preventDefault()
-
     try {
       const res = await axios.post(`${API_KEY}/login`, {
         email: formData.email,
         password: formData.password
       })
-<<<<<<< HEAD
-      if (res.data.userId !== undefined) {
-=======
-
-      if (res?.data) {
->>>>>>> dafafa2 (updated code)
+      if (res?.data?.userId !== undefined) {
         setLoginSuccess(true)
         dispatch(login(res.data))
         navigate('/')
       } else {
-<<<<<<< HEAD
         setInvalidAlert(true)
-        return
-      }
-    } catch (error) {
-      console.log(error)
-      setInvalidAlert(true) // Optionally handle error here
-=======
       }
     } catch (error) {
       console.error(error)
@@ -72,26 +53,26 @@ export default function Login () {
       } else {
         setErrorMessage('Something went wrong. Please try again.')
       }
->>>>>>> dafafa2 (updated code)
     }
   }
 
   return (
-<<<<<<< HEAD
     <>
-      <div className=''>
+      <div>
         {loginSuccess && (
           <RegistrationSuccessAlert
             message1='Login Successful!'
             message2='You can now access your account.'
           />
         )}
-
         {invalidAlert && (
           <InvalidCredentialsAlert
             message1='Invalid credentials!'
             message2='Please check your username and password and try again.'
           />
+        )}
+        {errorMessage && (
+          <ErrorAlert message1='Login Failed' message2={errorMessage} />
         )}
       </div>
 
@@ -103,47 +84,6 @@ export default function Login () {
                 Welcome Back
               </h2>
               <p className='text-gray-500 mt-2'>Please sign in to continue</p>
-=======
-    <div className='flex items-center justify-center min-h-[80vh]'>
-      {loginSuccess && (
-        <RegistrationSuccessAlert
-          message1='Login Successful!'
-          message2='You can now access your account.'
-        />
-      )}
-      {errorMessage && (
-        <ErrorAlert message1='Login Failed' message2={errorMessage} />
-      )}
-      <div className='w-full max-w-md'>
-        <div className='bg-white/80 backdrop-blur-lg rounded-2xl shadow-2xl p-8 space-y-8 transition-all duration-500 hover:shadow-xl'>
-          <div className='text-center'>
-            <h2 className='text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent'>
-              Welcome Back
-            </h2>
-            <p className='text-gray-500 mt-2'>Please sign in to continue</p>
-          </div>
-          <form className='space-y-6' onSubmit={handleSubmit}>
-            <div className='relative'>
-              <label
-                className='block text-gray-700 text-sm font-medium mb-2'
-                htmlFor='email'
-              >
-                Email Address
-              </label>
-              <div className='relative'>
-                <i className='absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5' />
-                <input
-                  className='w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white/50'
-                  type='email'
-                  id='email'
-                  name='email'
-                  placeholder='Enter your email'
-                  required
-                  value={formData.email}
-                  onChange={handleChange}
-                />
-              </div>
->>>>>>> dafafa2 (updated code)
             </div>
 
             <form className='space-y-6' onSubmit={handleSubmit}>

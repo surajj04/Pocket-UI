@@ -1,22 +1,14 @@
 import axios from 'axios'
 import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-<<<<<<< HEAD
 import RegistrationSuccessAlert from '../components/SuccessAlert'
-import InvalidCredentialsAlert from '../components/InvalidAlert'
-=======
-import RegistrationSuccessAlert from '../components/RegistrationSuccessAlert'
 import ErrorAlert from '../components/ErrorAlert'
->>>>>>> dafafa2 (updated code)
 
 const API_KEY = import.meta.env.VITE_APP_API_BASE_URL
 
 const RegistrationForm = () => {
   const navigate = useNavigate()
-<<<<<<< HEAD
-=======
 
->>>>>>> dafafa2 (updated code)
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -31,15 +23,12 @@ const RegistrationForm = () => {
 
   const [stateOptions, setStateOptions] = useState([])
   const [cityOptions, setCityOptions] = useState([])
-<<<<<<< HEAD
-  const [showSuccessAlert, setShowSuccessAlert] = useState(false)
-  const [showErrorAlert, setShowErrorAlert] = useState(false)
-  const [showAgeErrorAlert, setShowAgeErrorAlert] = useState(false)
-=======
+  const [loginSuccess, setLoginSuccess] = useState(false)
+  const [errorMessage, setErrorMessage] = useState(null)
   const [emailError, setEmailError] = useState('')
   const [ageError, setAgeError] = useState('')
->>>>>>> dafafa2 (updated code)
 
+  // Sample data for India states and cities
   const stateCityMap = {
     India: {
       states: [
@@ -357,12 +346,15 @@ const RegistrationForm = () => {
     const today = new Date()
     const birthDate = new Date(dob)
     let age = today.getFullYear() - birthDate.getFullYear()
-    const month = today.getMonth() - birthDate.getMonth()
+    const month = today.getMonth()
+    const day = today.getDate()
 
-    if (month < 0 || (month === 0 && today.getDate() < birthDate.getDate())) {
-      age--
+    if (
+      month < birthDate.getMonth() ||
+      (month === birthDate.getMonth() && day < birthDate.getDate())
+    ) {
+      age -= 1
     }
-
     return age
   }
 
@@ -399,103 +391,25 @@ const RegistrationForm = () => {
       city: ''
     }))
 
-    if (state) {
+    if (state && stateCityMap['India']?.cities[state]) {
       setCityOptions(stateCityMap['India'].cities[state])
     } else {
       setCityOptions([])
     }
   }
 
-<<<<<<< HEAD
-  const calculateAge = dob => {
-    const today = new Date()
-    const birthDate = new Date(dob)
-    let age = today.getFullYear() - birthDate.getFullYear()
-    const month = today.getMonth()
-    const day = today.getDate()
-
-    // If the birthday hasn't occurred yet this year, subtract 1 from age
-    if (
-      month < birthDate.getMonth() ||
-      (month === birthDate.getMonth() && day < birthDate.getDate())
-    ) {
-      age -= 1
-    }
-    return age
-  }
-
   const handleSubmit = async e => {
     e.preventDefault()
 
-    const age = calculateAge(formData.dob)
-
-    // Validate if the user is 18 or older
-    if (age < 18) {
-      setShowAgeErrorAlert(true)
-      setTimeout(() => {
-        setShowAgeErrorAlert(false)
-      }, 5000) // Hide age error alert after 5 seconds
-      return
-    }
-
-    if (formData.password === formData.confirmPassword) {
-      try {
-        const res = await axios.post(`${API_KEY}/register`, {
-          name: formData.name,
-          email: formData.email,
-          password: formData.password,
-          gender: formData.gender,
-          dob: formData.dob,
-          country: formData.country,
-          state: formData.state,
-          city: formData.city,
-          token: ''
-        })
-
-        if (res.status === 200) {
-          setShowSuccessAlert(true)
-          setTimeout(() => {
-            setShowSuccessAlert(false)
-            setFormData({
-              name: '',
-              email: '',
-              password: '',
-              confirmPassword: '',
-              gender: '',
-              dob: '',
-              country: '',
-              state: '',
-              city: ''
-            }) // Reset form after success
-            navigate('/login') // Navigate to login page after success
-          }, 2000) // Hide success alert after 5 seconds
-        } else {
-          setShowErrorAlert(true)
-          setTimeout(() => {
-            setShowErrorAlert(false)
-          }, 2000) // Hide error alert after 5 seconds
-        }
-      } catch (error) {
-        console.error(error)
-        setShowErrorAlert(true)
-        setTimeout(() => {
-          setShowErrorAlert(false)
-        }, 5000) // Hide error alert after 5 seconds
-      }
-=======
-  const [loginSuccess, setLoginSuccess] = useState(false)
-  const [errorMessage, setErrorMessage] = useState(null)
-
-  const handleSubmit = async e => {
-    e.preventDefault()
+    // Reset previous errors
+    setEmailError('')
+    setAgeError('')
+    setErrorMessage(null)
 
     // Email validation
     if (!isValidEmail(formData.email)) {
       setEmailError('Please enter a valid email address.')
       return
->>>>>>> dafafa2 (updated code)
-    } else {
-      setEmailError('')
     }
 
     // Age validation
@@ -503,8 +417,6 @@ const RegistrationForm = () => {
     if (age < 16) {
       setAgeError('You must be at least 16 years old to register.')
       return
-    } else {
-      setAgeError('')
     }
 
     // Password match validation
@@ -515,25 +427,28 @@ const RegistrationForm = () => {
 
     try {
       const res = await axios.post(`${API_KEY}/register`, {
-        ...formData,
+        name: formData.name,
+        email: formData.email,
+        password: formData.password,
+        gender: formData.gender,
+        dob: formData.dob,
+        country: formData.country,
+        state: formData.state,
+        city: formData.city,
         token: ''
       })
 
       if (res.status === 201) {
         setLoginSuccess(true)
         setTimeout(() => {
-          navigate('/')
+          navigate('/login')
         }, 2000)
       }
     } catch (error) {
-      if (
-        error.response &&
-        error.response.data &&
-        error.response.data.message
-      ) {
+      console.error(error)
+      if (error.response?.data?.message) {
         setErrorMessage(error.response.data.message)
       } else {
-        console.error(error)
         setErrorMessage('An unexpected error occurred. Please try again.')
       }
     }
@@ -544,12 +459,13 @@ const RegistrationForm = () => {
       {loginSuccess && (
         <RegistrationSuccessAlert
           message1='Registration Successful!'
-          message2='You can now access your account.'
+          message2='You can now log in to your account.'
         />
       )}
       {errorMessage && (
         <ErrorAlert message1='Registration Failed' message2={errorMessage} />
       )}
+
       <div className='w-full max-w-4xl bg-white p-6 md:p-8 rounded-2xl shadow-2xl space-y-8'>
         <h2 className='text-3xl font-bold text-blue-600 mb-4 text-center'>
           Create an Account
@@ -558,32 +474,9 @@ const RegistrationForm = () => {
           Fill in the details below to register
         </p>
 
-        {showSuccessAlert && (
-          <RegistrationSuccessAlert
-            message1={'Registration Successful!'}
-            message2={'You can now log in to your account.'}
-          />
-        )}
-
-        {showErrorAlert && (
-          <InvalidCredentialsAlert
-            message1={'Error!'}
-            message2={
-              'There was an issue with your registration. Please try again.'
-            }
-          />
-        )}
-
-        {showAgeErrorAlert && (
-          <InvalidCredentialsAlert
-            message1={'Error!'}
-            message2={'You must be at least 18 years old to register.'}
-          />
-        )}
-
         <form
           onSubmit={handleSubmit}
-          className='sm:grid sm:grid-cols-2 gap-6 space-y-4'
+          className='sm:grid sm:grid-cols-2 gap-6 space-y-4 sm:space-y-0'
         >
           <div className='relative'>
             <label
@@ -728,64 +621,10 @@ const RegistrationForm = () => {
             >
               <option value=''>Select Country</option>
               <option value='India'>India</option>
-              {/* You can add other countries here */}
             </select>
           </div>
 
-<<<<<<< HEAD
-          {/* State */}
-          <div className='relative'>
-            <label
-              htmlFor='state'
-              className='block text-sm font-medium text-gray-700'
-            >
-              State
-            </label>
-            <select
-              id='state'
-              name='state'
-              value={formData.state}
-              onChange={handleStateChange}
-              className='mt-1 block w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent'
-              required
-            >
-              <option value=''>Select State</option>
-              {stateOptions.map(state => (
-                <option key={state} value={state}>
-                  {state}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* City */}
-          <div className='relative'>
-            <label
-              htmlFor='city'
-              className='block text-sm font-medium text-gray-700'
-            >
-              City
-            </label>
-            <select
-              id='city'
-              name='city'
-              value={formData.city}
-              onChange={handleChange}
-              className='mt-1 block w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent'
-              required
-            >
-              <option value=''>Select City</option>
-              {cityOptions.map(city => (
-                <option key={city} value={city}>
-                  {city}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className='mt-6'>
-=======
-          {formData.country === 'India' && (
+          {formData.country && (
             <div className='relative'>
               <label
                 htmlFor='state'
@@ -837,8 +676,7 @@ const RegistrationForm = () => {
             </div>
           )}
 
-          <div className='col-span-2'>
->>>>>>> dafafa2 (updated code)
+          <div className='col-span-2 mt-6'>
             <button
               type='submit'
               className='w-full py-3 px-4 bg-blue-600 text-white text-lg font-medium rounded-lg hover:bg-blue-700'
@@ -847,12 +685,14 @@ const RegistrationForm = () => {
             </button>
           </div>
 
-          <p className='text-center text-sm text-gray-500 mt-4'>
-            Already have an account?{' '}
-            <Link to='/login' className='text-blue-600'>
-              Log in here
-            </Link>
-          </p>
+          <div className='col-span-2 text-center'>
+            <p className='text-sm text-gray-500 mt-4'>
+              Already have an account?{' '}
+              <Link to='/login' className='text-blue-600'>
+                Log in here
+              </Link>
+            </p>
+          </div>
         </form>
       </div>
     </div>

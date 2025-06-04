@@ -10,11 +10,7 @@ import {
 } from 'recharts'
 
 const SpendingTrends = ({ dailyTrends }) => {
-<<<<<<< HEAD
-  // Convert dailyTrends object into an array for recharts
-=======
   // Convert dailyTrends object into chart data array
->>>>>>> dafafa2 (updated code)
   const data = Object.keys(dailyTrends).map(day => ({
     name: day.substring(0, 3),
     transactions: dailyTrends[day].totalTransactions

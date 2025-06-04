@@ -1,56 +1,90 @@
-import { useState } from 'react'
-import { useDispatch } from 'react-redux'
-import { logout } from '../store/userSlice'
+import { useState, useEffect } from 'react'
+import { X, LogOut, AlertTriangle } from 'lucide-react'
 
 const LogoutConfirmationAlert = ({ onConfirm, onCancel }) => {
   const [isVisible, setIsVisible] = useState(true)
+  const [isClosing, setIsClosing] = useState(false)
 
-  const dispatch = useDispatch()
+  useEffect(() => {
+    if (!isVisible) {
+      const timer = setTimeout(() => {
+        onCancel && onCancel()
+      }, 300)
+      return () => clearTimeout(timer)
+    }
+  }, [isVisible, onCancel])
 
   const handleClose = () => {
-    setIsVisible(false)
-    onCancel && onCancel()
+    setIsClosing(true)
+    setTimeout(() => setIsVisible(false), 300)
   }
 
   const handleConfirm = () => {
-    setIsVisible(false)
-    dispatch(logout())
-    onConfirm && onConfirm()
+    setIsClosing(true)
+    setTimeout(() => {
+      setIsVisible(false)
+      onConfirm && onConfirm()
+    }, 300)
   }
 
   return (
     <>
-      {/* Overlay with blur effect */}
       {isVisible && (
-        <div className='fixed inset-0 bg-gray bg-opacity-40 backdrop-blur-sm z-40'></div>
+        <div
+          className={`fixed inset-0 bg-black/70 backdrop-blur-sm z-50 transition-opacity duration-300 ${
+            isClosing ? 'opacity-0' : 'opacity-100'
+          }`}
+          onClick={handleClose}
+        />
       )}
 
-      {/* Main alert */}
-      <div
-        className={`fixed top-5 left-1/2 transform -translate-x-1/2 w-full sm:w-3/4 md:w-1/2 lg:w-1/3 rounded-lg shadow-lg transition-all ${
-          isVisible ? 'opacity-100 z-50' : 'opacity-0 pointer-events-none'
-        }`}
-      >
-        <div className='bg-gray-100 text-gray-800 p-6 rounded-lg flex flex-col items-center justify-center'>
-          <div className='mb-4 text-center'>
-            <p className='font-medium text-lg'>Do you really want to logout?</p>
+      {isVisible && (
+        <div
+          className={`fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-11/12 sm:w-96 rounded-2xl shadow-xl bg-white z-50 transition-all duration-300 ${
+            isClosing ? 'opacity-0 scale-95' : 'opacity-100 scale-100'
+          }`}
+        >
+          <div className='p-6 pb-4'>
+            <div className='flex justify-between items-start'>
+              <div className='flex items-start'>
+                <div className='bg-amber-100 p-3 rounded-full mr-4'>
+                  <AlertTriangle className='h-6 w-6 text-amber-600' />
+                </div>
+                <div>
+                  <h3 className='text-xl font-semibold text-gray-800'>
+                    Confirm Logout
+                  </h3>
+                  <p className='mt-1 text-gray-600'>
+                    Are you sure you want to sign out?
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={handleClose}
+                className='text-gray-400 hover:text-gray-600 transition-colors'
+              >
+                <X className='h-5 w-5' />
+              </button>
+            </div>
           </div>
-          <div className='flex space-x-4'>
-            <button
-              onClick={handleConfirm}
-              className='bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 focus:outline-none'
-            >
-              Yes, Logout
-            </button>
+
+          <div className='px-6 py-4 bg-gray-50 rounded-b-2xl flex justify-end gap-3'>
             <button
               onClick={handleClose}
-              className='bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 focus:outline-none'
+              className='px-5 py-2 rounded-lg text-gray-700 hover:bg-gray-200 transition-colors font-medium'
             >
               Cancel
             </button>
+            <button
+              onClick={handleConfirm}
+              className='px-5 py-2 rounded-lg bg-gradient-to-r from-rose-500 to-rose-600 text-white font-medium hover:opacity-90 transition-opacity flex items-center'
+            >
+              <LogOut className='h-4 w-4 mr-2' />
+              Logout
+            </button>
           </div>
         </div>
-      </div>
+      )}
     </>
   )
 }
