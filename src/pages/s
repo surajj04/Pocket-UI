@@ -19,7 +19,7 @@ export default function GoalsPage () {
 
   // Get current budget
   const currentBudget = user?.budgets?.[user.budgets.length - 1] || {}
-  const availableSavings = user?.savings.savings || 0
+  const availableSavings = currentBudget?.currentBalance || 0
   const currentBudgetId = currentBudget?.id || null
 
   return (
@@ -79,7 +79,6 @@ export default function GoalsPage () {
             currentBudgetId={currentBudgetId}
             onClose={() => setShowAllocation(false)}
             token={user?.token}
-            userId={user?.userId} // Added userId prop
             setSuccessAlert={setSuccessAlert}
             setInvalidAlert={setInvalidAlert}
             dispatch={dispatch}
@@ -452,7 +451,6 @@ function AllocateSavingsModal ({
   currentBudgetId,
   onClose,
   token,
-  userId, // Added userId prop
   setSuccessAlert,
   setInvalidAlert,
   dispatch
@@ -462,6 +460,7 @@ function AllocateSavingsModal ({
   const [isLoading, setIsLoading] = useState(false)
 
   useEffect(() => {
+    // Initialize allocations with 0 for each goal
     const initialAllocations = {}
     goals.forEach(goal => {
       initialAllocations[goal.id] = 0
@@ -471,6 +470,8 @@ function AllocateSavingsModal ({
 
   const handleAllocationChange = (goalId, value) => {
     let numValue = Math.max(0, Number(value) || 0)
+
+    // Cap allocation at goal's remaining amount
     const goal = goals.find(g => g.id === goalId)
     if (goal) {
       const maxAllocation = goal.targetAmount - goal.amount
@@ -478,6 +479,7 @@ function AllocateSavingsModal ({
         numValue = maxAllocation
       }
     }
+
     setAllocations(prev => ({
       ...prev,
       [goalId]: numValue
@@ -493,45 +495,56 @@ function AllocateSavingsModal ({
   }
 
   const handleSubmit = async () => {
-    // ... validation logic ...
+    const allocatedTotal = Object.values(allocations).reduce(
+      (sum, val) => sum + val,
+      0
+    )
+
+    if (allocatedTotal > availableSavings) {
+      setError('Total allocation exceeds available savings')
+      return
+    }
+
+    if (allocatedTotal === 0) {
+      setError('Please allocate some amount to your goals')
+      return
+    }
 
     setIsLoading(true)
     setError('')
 
     try {
-      const goalUpdates = goals
-        .filter(goal => allocations[goal.id] > 0)
-        .map(goal => {
-          const amountToAdd = allocations[goal.id]
+      // Prepare goal update promises
+      const goalUpdates = goals.map(goal => {
+        const amountToAdd = allocations[goal.id] || 0
+        if (amountToAdd > 0) {
           const updatedGoal = {
-            ...goal,
+            id: goal.id,
+            userId: user?.userId,
             amount: goal.amount + amountToAdd
           }
 
           return axios.put(`${API_KEY}/goal`, updatedGoal, {
             headers: { Authorization: `Bearer ${token}` }
           })
-        })
+        }
+        return Promise.resolve()
+      })
 
-      let budgetUpdate = null
+      // Prepare budget update promise
+      let budgetUpdate = Promise.resolve()
       if (currentBudgetId && allocatedTotal > 0) {
-        const newBalance = availableSavings - allocatedTotal
         budgetUpdate = axios.patch(
           `${API_KEY}/budget/${currentBudgetId}`,
-          { currentBalance: newBalance },
+          { currentBalance: availableSavings - allocatedTotal },
           { headers: { Authorization: `Bearer ${token}` } }
         )
       }
 
-      // Execute all updates concurrently
-      await Promise.all([
-        ...goalUpdates,
-        ...(budgetUpdate ? [budgetUpdate] : [])
-      ])
+      // Execute all updates
+      await Promise.all([...goalUpdates, budgetUpdate])
 
-      // Refresh data
       dispatch(fetchData(token))
-
       setSuccessAlert(true)
       onClose()
     } catch (error) {
